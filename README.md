@@ -5,14 +5,9 @@
 ## 依存プラグイン
 
 - UpdraftPlus
-- WP-CLI
+- Contact Form 7
 
-# 参考
-https://updraftplus.com/wp-cli-updraftplus-documentation/
-https://wp-cli.org/ja/
-https://www.php.net/manual/ja/function.exec.php
-
-## 初期値やデフォルトの値を変更したい場合
-1.変更を加える
-2.バックアップを取る
-3.生成したバックアップファイルのnonceを見てプラグインを書き換える
+## 初期値を変更したい場合
+1. 変更を加える
+2. ユーザが登録されてない状態を確認してバックアップを取る
+3. 生成したバックアップファイルのnonceを見てプラグインのnonceを書き換える
