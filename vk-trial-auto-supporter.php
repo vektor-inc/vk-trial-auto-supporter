@@ -212,20 +212,3 @@ function add_admin_only_post_type_manage() {
 	);
 }
 add_action( 'init', 'add_admin_only_post_type_manage' );
-
-
-
-function my_katawara_site_container_prepend_1 () {
-  $vk_theme_update = get_option( 'vk_theme_update' );
-  $vk_plugin_update = get_option( 'vk_plugin_update' );
-  $vk_updraftplus_restore = get_option( 'vk_updraftplus_restore' );
-  var_dump($vk_theme_update);
-  var_dump($vk_plugin_update);
-  var_dump($vk_updraftplus_restore);
-  if ( $vk_theme_update == 'false' or $vk_plugin_update == 'false' or $vk_updraftplus_restore == 'false' ) {
-    echo "どれかがダメ";
-  } else {
-    echo "上手くいっている";
-  }
-}
-add_action('katawara_site-container_prepend', 'my_katawara_site_container_prepend_1');
