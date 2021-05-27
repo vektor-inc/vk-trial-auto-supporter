@@ -56,10 +56,10 @@ function vk_trial_auto_function() {
 	 * 復元するコマンド
 	 * https://updraftplus.com/wp-cli-updraftplus-documentation/
 	 * 
-	 * 03f928d85c1cはnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
+	 * 4b574fbf3303はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 	 * データベースのみ復元する
 	 */
-	// exec('wp updraftplus restore 03f928d85c1c --components="db"' , $output, $return_var);
+	// exec('wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var);
 	if ( $return_var !== 0 ){
 		$result = 'false';
 	} else {
@@ -90,10 +90,10 @@ function vk_trial_auto_function() {
 	update_option( 'vektor_guest_password', $password );
 
 	/**
-	 * コマンドが実行されていなかった場合管理者宛にメールを送る
+	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
-	$vk_theme_update = get_option( 'vk_theme_update' );
-	$vk_plugin_update = get_option( 'vk_plugin_update' );
+	$vk_theme_update        = get_option( 'vk_theme_update' );
+	$vk_plugin_update       = get_option( 'vk_plugin_update' );
 	$vk_updraftplus_restore = get_option( 'vk_updraftplus_restore' );
 	if ( $vk_theme_update == 'false' or $vk_plugin_update == 'false' or $vk_updraftplus_restore == 'false' ) {
 
@@ -126,7 +126,7 @@ add_filter( 'cron_schedules', 'vk_trial_interval' );
 
 /**
  * イベントの実行
- * 本番ではstrtotime('2021-05-25 02:00:00')を変更し指定の時刻からスタート
+ * 本番ではstrtotime('2021-05-27 02:00:00')を変更し指定の時刻からスタート
  * 300secをdailyに変える
  */
 if ( !wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
