@@ -81,47 +81,35 @@ if ( !wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
  * 自動返信でパスワードを送る
  * 参考：https://stackoverflow.com/questions/28857693/wordpress-overwrite-contact-form-mail-2-body
  */
-function wpcf7_post_password ( $contact_form, &$abort, $submission ) {
-	/**
-	 * 送信情報を取得
-	 */
-	$submission = WPCF7_Submission::get_instance();
-	if( $submission ) {
-		/**
-		 * 送信された情報を取得
-		 */
-		$formdata = $submission->get_posted_data();
+function wpcf7_post_password ( $contact_form ) {
+  /**
+   * wp-cronで生成されたパスワード
+   */
+  $password = get_option( 'vektor_guest_password' );
 
-		/**
-		 * wp-cronで生成されたパスワード
-		 */
-		$password = get_option( 'vektor_guest_password' );
+  /**
+   * mailは管理者宛のメール
+   * mail_2は自動返信メール
+   */
+  $mail  = $contact_form->prop( 'mail' );
+  $mail2 = $contact_form->prop( 'mail_2' );
 
-		/**
-		 * mailは管理者宛のメール
-		 * mail_2は自動返信メール
-		 */
-		$mail  = $contact_form->prop( 'mail' );
-		$mail2 = $contact_form->prop( 'mail_2' );
+  /**
+   * メール文章のgenerate_passwordの文字列を現在の設定されているパスワードに変更する
+   */
+  $mail['body']  = str_replace( "generate_password", $password, $mail['body'] );
+  $mail2['body'] = str_replace( "generate_password", $password, $mail2['body'] );
 
-		/**
-		 * メール文章のgenerate_passwordの文字列を現在の設定されているパスワードに変更する
-		 */
-		$mail['body']  = str_replace( "generate_password", $password, $mail['body'] );
-		$mail2['body'] = str_replace( "generate_password", $password, $mail2['body'] );
+  $contact_form->set_properties( array( 'mail' => $mail ) );
+  $contact_form->set_properties( array( 'mail_2' => $mail2 ) );
 
-		$contact_form->set_properties( array( 'mail' => $mail ) );
-		$contact_form->set_properties( array( 'mail_2' => $mail2 ) );
-
-		return $contact_form;
-	}
+  return $contact_form;
 }
-add_action( 'wpcf7_before_send_mail', 'wpcf7_post_password', 10, 3 );
+add_action( 'wpcf7_before_send_mail', 'wpcf7_post_password' );
 
 /**
  * リセット前１時間前くらいからはフォーム申請を停止する
  * https://wpdocs.osdn.jp/%E9%96%A2%E6%95%B0%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/wp_schedule_event
- * 本番では 1から2時
  */
 function filter_wpcf7_acceptance( $true ) { 
 	$nowdate = date_i18n('H'); 
@@ -159,14 +147,10 @@ function add_admin_only_post_type_manage() {
 				'name'          => '管理者用投稿タイプ',
 			),
 			'public'          => true,
-			'show_ui'         => true,
-			'show_in_menu'    => true,
-			'show_in_rest'    => true,
 			'menu_position'   => 100,
-			'capability_type' => array( 'post_type_manage', 'post_type_manages' ),
-			'map_meta_cap'    => true,
 			'menu_icon'       => 'dashicons-admin-generic',
 			'supports'        => array( 'title' , 'editor' ),
+			'show_in_rest'    => true,
 		)
 	);
 }
