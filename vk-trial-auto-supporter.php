@@ -19,13 +19,13 @@ function vk_trial_auto_function() {
 	 * https://developer.wordpress.org/cli/commands/theme/update/
 	 */
 	exec( 'wp theme update --all', $output, $return_var );
-  if ( $return_var !== 0 ){
-    $result = 'false';
-  } else {
-    $result = 'true';
-  }
+	if ( $return_var !== 0 ){
+		$result = 'false';
+	} else {
+		$result = 'true';
+	}
 
-  /**
+	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
 	if ( ! get_option( 'vk_theme_update' ) ) {
@@ -44,7 +44,7 @@ function vk_trial_auto_function() {
 		$result = 'true';
 	}
 
-  /**
+	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
 	if ( ! get_option( 'vk_plugin_update' ) ) {
@@ -66,7 +66,7 @@ function vk_trial_auto_function() {
 		$result = 'true';
 	}
 
-  /**
+	/**
 	 * 復元が正常に終わったかどうか
 	 */
 	if ( ! get_option( 'vk_updraftplus_restore' ) ) {
