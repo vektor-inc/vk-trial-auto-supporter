@@ -42,7 +42,7 @@ function vk_trial_auto_function() {
 	exec( 'wp plugin update --all', $output, $return_var );
 
 	/**
-	 * テーマアップデートが正常に終わったかどうか
+	 * プラグインアップデートが正常に終わったかどうか
 	 */
 	if ( $return_var !== 0 ) {
 		$plugin_update = array(
