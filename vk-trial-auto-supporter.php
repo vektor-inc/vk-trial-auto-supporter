@@ -13,7 +13,7 @@
  *  深夜２時以降にユーザーからアクセスがあった時に１日１回実行する関数
  *  アクセスが無ければ実行されない
  */
-function vktas_daily_job() {
+function vktas_auto_job() {
 	$options = array();
 	/**
 	 * テーマをアップデートする
@@ -120,7 +120,7 @@ EOT;
 	}
 
 }
-add_action( 'vk_trial_form_auto_cron', 'vktas_daily_job' );
+add_action( 'vktas_auto_cron', 'vktas_auto_job' );
 
 /**
  *  検証用インターバル設定関数
@@ -141,12 +141,12 @@ add_filter( 'cron_schedules', 'vktas_test_interval' );
  * 本番ではstrtotime('2021-05-27 02:00:00')を変更し指定の時刻からスタート
  * 300secをdailyに変える
  */
-if ( ! wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
+if ( ! wp_next_scheduled( 'vktas_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
 	$timestamp  = '2021-05-27 11:40:00';
 	// 標準は hourly, twicedaily, daily だが検証用に独自に '300sec' が追加してある
 	$recurrence = '300sec';
-	$hook       = 'vk_trial_form_auto_cron';
+	$hook       = 'vktas_auto_cron';
 	wp_schedule_event( strtotime( $timestamp ), $recurrence, $hook );
 }
 
