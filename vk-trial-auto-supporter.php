@@ -13,7 +13,7 @@
  *  深夜２時以降にユーザーからアクセスがあった時に１日１回実行する関数
  *  アクセスが無ければ実行されない
  */
-function vktas_daily_job() {
+function vktas_auto_job() {
 	$options = array();
 	/**
 	 * テーマをアップデートする
@@ -101,7 +101,7 @@ function vktas_daily_job() {
 	/**
 	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
-	$options                = vktas_get_default_options();
+	$options                = vktas_get_options();
 	$vk_theme_update        = $options['theme_update'];
 	$vk_plugin_update       = $options['plugin_update'];
 	$vk_updraftplus_restore = $options['updraftplus'];
@@ -112,41 +112,42 @@ function vktas_daily_job() {
 		$to      = get_option( 'admin_email' );
 		$subject = 'お試し申請サイト復元エラー';
 		$message = <<<EOT
-		テーマエラー：$vk_theme_update
-		プラグインエラー：$vk_plugin_update
-		復元エラー：$vk_updraftplus_restore
+		テーマアップデート：$vk_theme_update
+		プラグインアップデート：$vk_plugin_update
+		復元：$vk_updraftplus_restore
 EOT;
 		wp_mail( $to, $subject, $message );
 	}
 
 }
-add_action( 'vk_trial_form_auto_cron', 'vktas_daily_job' );
+add_action( 'vktas_auto_cron', 'vktas_auto_job' );
 
 /**
  *  検証用インターバル設定関数
  *  本番は１日おきなのでデフォルトのdailyを使用
- *  vk_trial_intervalの関数は不要
+ *  vktas_test_intervalの関数は不要
  */
-function vk_trial_interval( $schedules ) {
+function vktas_test_interval( $schedules ) {
 	$schedules['300sec'] = array(
 		'interval' => 300,
 		'display'  => 'every 300 seconds',
 	);
 	return $schedules;
 }
-add_filter( 'cron_schedules', 'vk_trial_interval' );
+add_filter( 'cron_schedules', 'vktas_test_interval' );
 
 /**
  * イベントの実行
  * 本番ではstrtotime('2021-05-27 02:00:00')を変更し指定の時刻からスタート
  * 300secをdailyに変える
  */
-if ( ! wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
+if ( ! wp_next_scheduled( 'vktas_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
 	$timestamp  = '2021-05-27 11:40:00';
-	$recurrence = 'daily'; // hourly, twicedaily, daily
-	$hook       = 'vk_trial_form_auto_cron';
-	wp_schedule_event( strtotime( $timestamp ), '300sec', $hook );
+	// 標準は hourly, twicedaily, daily だが検証用に独自に '300sec' が追加してある
+	$recurrence = '300sec';
+	$hook       = 'vktas_auto_cron';
+	wp_schedule_event( strtotime( $timestamp ), $recurrence, $hook );
 }
 
 /**
@@ -157,7 +158,7 @@ function vktas_wpcf7_post_password( $contact_form ) {
 	/**
 	 * wp-cronで生成されたパスワード
 	 */
-	$options  = vktas_get_default_options();
+	$options  = vktas_get_options();
 	$password = $options['password'];
 
 	/**
@@ -232,7 +233,7 @@ add_action( 'init', 'vktas_add_admin_only_post_type_manage' );
 /**
  * vktas_optionsを変換
  */
-function vktas_get_default_options() {
+function vktas_get_options() {
 	$default = array(
 		'theme_update'  => '',
 		'plugin_update' => '',
