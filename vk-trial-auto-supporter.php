@@ -14,7 +14,7 @@
  *  アクセスが無ければ実行されない
  */
 function vktas_daily_job() {
-	$result = array();
+	$options = array();
 	/**
 	 * テーマをアップデートする
 	 * https://developer.wordpress.org/cli/commands/theme/update/
@@ -33,7 +33,7 @@ function vktas_daily_job() {
 			'theme_update' => 'true',
 		);
 	}
-	$result = array_merge( $result, $theme_update );
+	$options = array_merge( $options, $theme_update );
 
 	/**
 	 * プラグインをアップデートする
@@ -53,7 +53,7 @@ function vktas_daily_job() {
 			'plugin_update' => 'true',
 		);
 	}
-	$result = array_merge( $result, $plugin_update );
+	$options = array_merge( $options, $plugin_update );
 
 	/**
 	 * 復元するコマンド
@@ -76,7 +76,7 @@ function vktas_daily_job() {
 			'updraftplus' => 'true',
 		);
 	}
-	$result = array_merge( $result, $updraftplus );
+	$options = array_merge( $options, $updraftplus );
 
 	/**
 	 * 試用版ユーザーのパスワードを変更する
@@ -85,23 +85,23 @@ function vktas_daily_job() {
 	$password = wp_generate_password( 12, true );
 	wp_set_password( $password, 2 );
 
-	$result_password = array(
+	$options_password = array(
 		'password' => $password,
 	);
-	$result          = array_merge( $result, $result_password );
+	$options          = array_merge( $options, $options_password );
 
 	/**
 	 * 自動返信メールで試用ユーザーにパスワードを送るためにDBに保存
 	 */
 	if ( ! get_option( 'vktas_options' ) ) {
-		add_option( 'vktas_options', $result );
+		add_option( 'vktas_options', $options );
 	}
-	update_option( 'vktas_options', $result );
+	update_option( 'vktas_options', $options );
 
 	/**
 	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
-	$options                = vktas_default_options();
+	$options                = vktas_get_default_options();
 	$vk_theme_update        = $options['theme_update'];
 	$vk_plugin_update       = $options['plugin_update'];
 	$vk_updraftplus_restore = $options['updraftplus'];
@@ -143,7 +143,10 @@ add_filter( 'cron_schedules', 'vk_trial_interval' );
  */
 if ( ! wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
-	wp_schedule_event( strtotime( '2021-05-27 11:40:00' ), '300sec', 'vk_trial_form_auto_cron' );
+	$timestamp  = '2021-05-27 11:40:00';
+	$recurrence = 'daily'; // hourly, twicedaily, daily
+	$hook       = 'vk_trial_form_auto_cron';
+	wp_schedule_event( strtotime( $timestamp ), '300sec', $hook );
 }
 
 /**
@@ -154,7 +157,7 @@ function vktas_wpcf7_post_password( $contact_form ) {
 	/**
 	 * wp-cronで生成されたパスワード
 	 */
-	$options  = vktas_default_options();
+	$options  = vktas_get_default_options();
 	$password = $options['password'];
 
 	/**
@@ -229,7 +232,7 @@ add_action( 'init', 'vktas_add_admin_only_post_type_manage' );
 /**
  * vktas_optionsを変換
  */
-function vktas_default_options() {
+function vktas_get_default_options() {
 	$default = array(
 		'theme_update'  => '',
 		'plugin_update' => '',
