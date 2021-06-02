@@ -112,9 +112,9 @@ function vktas_auto_job() {
 		$to      = get_option( 'admin_email' );
 		$subject = 'お試し申請サイト復元エラー';
 		$message = <<<EOT
-		テーマエラー：$vk_theme_update
-		プラグインエラー：$vk_plugin_update
-		復元エラー：$vk_updraftplus_restore
+		テーマアップデート：$vk_theme_update
+		プラグインアップデート：$vk_plugin_update
+		復元：$vk_updraftplus_restore
 EOT;
 		wp_mail( $to, $subject, $message );
 	}
