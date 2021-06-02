@@ -125,16 +125,16 @@ add_action( 'vk_trial_form_auto_cron', 'vktas_daily_job' );
 /**
  *  検証用インターバル設定関数
  *  本番は１日おきなのでデフォルトのdailyを使用
- *  vk_trial_intervalの関数は不要
+ *  vktas_test_intervalの関数は不要
  */
-function vk_trial_interval( $schedules ) {
+function vktas_test_interval( $schedules ) {
 	$schedules['300sec'] = array(
 		'interval' => 300,
 		'display'  => 'every 300 seconds',
 	);
 	return $schedules;
 }
-add_filter( 'cron_schedules', 'vk_trial_interval' );
+add_filter( 'cron_schedules', 'vktas_test_interval' );
 
 /**
  * イベントの実行
