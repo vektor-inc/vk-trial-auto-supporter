@@ -144,9 +144,10 @@ add_filter( 'cron_schedules', 'vk_trial_interval' );
 if ( ! wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
 	$timestamp  = '2021-05-27 11:40:00';
-	$recurrence = 'daily'; // hourly, twicedaily, daily
+	// 標準は hourly, twicedaily, daily だが検証用に独自に '300sec' が追加してある
+	$recurrence = '300sec';
 	$hook       = 'vk_trial_form_auto_cron';
-	wp_schedule_event( strtotime( $timestamp ), '300sec', $hook );
+	wp_schedule_event( strtotime( $timestamp ), $recurrence, $hook );
 }
 
 /**
