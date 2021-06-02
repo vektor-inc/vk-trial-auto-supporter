@@ -101,7 +101,7 @@ function vktas_daily_job() {
 	/**
 	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
-	$options                = vktas_get_default_options();
+	$options                = vktas_get_options();
 	$vk_theme_update        = $options['theme_update'];
 	$vk_plugin_update       = $options['plugin_update'];
 	$vk_updraftplus_restore = $options['updraftplus'];
@@ -157,7 +157,7 @@ function vktas_wpcf7_post_password( $contact_form ) {
 	/**
 	 * wp-cronで生成されたパスワード
 	 */
-	$options  = vktas_get_default_options();
+	$options  = vktas_get_options();
 	$password = $options['password'];
 
 	/**
@@ -232,7 +232,7 @@ add_action( 'init', 'vktas_add_admin_only_post_type_manage' );
 /**
  * vktas_optionsを変換
  */
-function vktas_get_default_options() {
+function vktas_get_options() {
 	$default = array(
 		'theme_update'  => '',
 		'plugin_update' => '',
