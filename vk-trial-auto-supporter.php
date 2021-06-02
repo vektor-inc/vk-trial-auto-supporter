@@ -24,13 +24,13 @@ function vk_trial_auto_function() {
 	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
-	if ( $return_var !== 0 ){
+	if ( $return_var !== 0 ) {
 		$theme_update = array(
-			'theme_update' => 'false'
+			'theme_update' => 'false',
 		);
 	} else {
-		$theme_update =array(
-			'theme_update' => 'true'
+		$theme_update = array(
+			'theme_update' => 'true',
 		);
 	}
 	$result = array_merge( $result, $theme_update );
@@ -44,13 +44,13 @@ function vk_trial_auto_function() {
 	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
-	if ( $return_var !== 0 ){
-		$plugin_update =array(
-			'plugin_update' => 'false'
+	if ( $return_var !== 0 ) {
+		$plugin_update = array(
+			'plugin_update' => 'false',
 		);
 	} else {
-		$plugin_update =array(
-			'plugin_update' => 'true'
+		$plugin_update = array(
+			'plugin_update' => 'true',
 		);
 	}
 	$result = array_merge( $result, $plugin_update );
@@ -58,37 +58,37 @@ function vk_trial_auto_function() {
 	/**
 	 * 復元するコマンド
 	 * https://updraftplus.com/wp-cli-updraftplus-documentation/
-	 * 
+	 *
 	 * 4b574fbf3303はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 	 * データベースのみ復元する
 	 */
-	//exec( 'wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var );
+	// exec( 'wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var );
 
 	/**
 	 * 復元が正常に終わったかどうか
 	 */
-	if ( $return_var !== 0 ){
+	if ( $return_var !== 0 ) {
 		$updraftplus = array(
-			'updraftplus' => 'false'
+			'updraftplus' => 'false',
 		);
 	} else {
 		$updraftplus = array(
-			'updraftplus' => 'true'
+			'updraftplus' => 'true',
 		);
 	}
 	$result = array_merge( $result, $updraftplus );
 
 	/**
-	 * 試用版ユーザーのパスワードを変更する 
+	 * 試用版ユーザーのパスワードを変更する
 	 * 試用版ユーザーID '2'を設定
 	 */
 	$password = wp_generate_password( 12, true );
 	wp_set_password( $password, 2 );
 
-	$result_password = array (
-		'password' => $password
+	$result_password = array(
+		'password' => $password,
 	);
-	$result = array_merge( $result, $result_password );
+	$result          = array_merge( $result, $result_password );
 
 	/**
 	 * 自動返信メールで試用ユーザーにパスワードを送るためにDBに保存
@@ -102,15 +102,14 @@ function vk_trial_auto_function() {
 	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
 	$options                = vktas_default_options();
-	$vk_theme_update        = $options[ 'theme_update' ];
-	$vk_plugin_update       = $options[ 'plugin_update' ];
-	$vk_updraftplus_restore = $options[ 'updraftplus' ];
-	if ( 
-		$vk_theme_update        == 'false' ||
-		$vk_plugin_update       == 'false' ||
+	$vk_theme_update        = $options['theme_update'];
+	$vk_plugin_update       = $options['plugin_update'];
+	$vk_updraftplus_restore = $options['updraftplus'];
+	if ( $vk_theme_update == 'false' ||
+		$vk_plugin_update == 'false' ||
 		$vk_updraftplus_restore == 'false'
 	) {
-		$to = get_option('admin_email');
+		$to      = get_option( 'admin_email' );
 		$subject = 'お試し申請サイト復元エラー';
 		$message = <<<EOT
 		テーマエラー：$vk_theme_update
@@ -121,7 +120,7 @@ EOT;
 	}
 
 }
-add_action ( 'vk_trial_form_auto_cron', 'vk_trial_auto_function' );
+add_action( 'vk_trial_form_auto_cron', 'vk_trial_auto_function' );
 
 /**
  *  検証用インターバル設定関数
@@ -131,7 +130,7 @@ add_action ( 'vk_trial_form_auto_cron', 'vk_trial_auto_function' );
 function vk_trial_interval( $schedules ) {
 	$schedules['300sec'] = array(
 		'interval' => 300,
-		'display' => 'every 300 seconds'
+		'display'  => 'every 300 seconds',
 	);
 	return $schedules;
 }
@@ -142,7 +141,7 @@ add_filter( 'cron_schedules', 'vk_trial_interval' );
  * 本番ではstrtotime('2021-05-27 02:00:00')を変更し指定の時刻からスタート
  * 300secをdailyに変える
  */
-if ( !wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
+if ( ! wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
 	wp_schedule_event( strtotime( '2021-05-27 11:40:00' ), '300sec', 'vk_trial_form_auto_cron' );
 }
@@ -151,12 +150,12 @@ if ( !wp_next_scheduled( 'vk_trial_form_auto_cron' ) ) {
  * 自動返信でパスワードを送る
  * 参考：https://stackoverflow.com/questions/28857693/wordpress-overwrite-contact-form-mail-2-body
  */
-function wpcf7_post_password ( $contact_form ) {
+function wpcf7_post_password( $contact_form ) {
 	/**
 	 * wp-cronで生成されたパスワード
 	 */
 	$options  = vktas_default_options();
-	$password = $options[ 'password' ];
+	$password = $options['password'];
 
 	/**
 	 * mailは管理者宛のメール
@@ -168,8 +167,8 @@ function wpcf7_post_password ( $contact_form ) {
 	/**
 	 * メール文章のgenerate_passwordの文字列を現在の設定されているパスワードに変更する
 	 */
-	$mail['body']  = str_replace( "generate_password", $password, $mail['body'] );
-	$mail2['body'] = str_replace( "generate_password", $password, $mail2['body'] );
+	$mail['body']  = str_replace( 'generate_password', $password, $mail['body'] );
+	$mail2['body'] = str_replace( 'generate_password', $password, $mail2['body'] );
 
 	$contact_form->set_properties( array( 'mail' => $mail ) );
 	$contact_form->set_properties( array( 'mail_2' => $mail2 ) );
@@ -182,8 +181,8 @@ add_action( 'wpcf7_before_send_mail', 'wpcf7_post_password' );
  * リセット前１時間前くらいからはフォーム申請を停止する
  * https://wpdocs.osdn.jp/%E9%96%A2%E6%95%B0%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/wp_schedule_event
  */
-function filter_wpcf7_acceptance( $true ) { 
-	$nowdate = date_i18n('H'); 
+function filter_wpcf7_acceptance( $true ) {
+	$nowdate = date_i18n( 'H' );
 	if ( 1 <= $nowdate && $nowdate < 2 ) {
 		$true = false;
 	} else {
@@ -196,11 +195,11 @@ add_filter( 'wpcf7_acceptance', 'filter_wpcf7_acceptance' );
 /**
  * フォームの申請を止めるのでフォーム送信時のメッセージの出力を加工する
  */
-function filter_wpcf7_display_message( $message, $status ) { 
+function filter_wpcf7_display_message( $message, $status ) {
 	if ( 'mail_sent_ok' == $status ) {
-		$message = "申請ありがとうございました。送信頂いたメールアドレスにログイン情報をお送りさせていただいたのでご確認お願いします";
+		$message = '申請ありがとうございました。送信頂いたメールアドレスにログイン情報をお送りさせていただいたのでご確認お願いします';
 	} else {
-		$message = "フォームの送信に失敗しました。しばらく時間をおいて再度お試しください。";
+		$message = 'フォームの送信に失敗しました。しばらく時間をおいて再度お試しください。';
 	}
 	return $message;
 };
@@ -214,14 +213,14 @@ function add_admin_only_post_type_manage() {
 	register_post_type(
 		'vk_trial',
 		array(
-			'labels'          => array(
-				'name'          => '管理者用投稿タイプ',
+			'labels'        => array(
+				'name' => '管理者用投稿タイプ',
 			),
-			'public'          => true,
-			'menu_position'   => 100,
-			'menu_icon'       => 'dashicons-admin-generic',
-			'supports'        => array( 'title' , 'editor' ),
-			'show_in_rest'    => true,
+			'public'        => true,
+			'menu_position' => 100,
+			'menu_icon'     => 'dashicons-admin-generic',
+			'supports'      => array( 'title', 'editor' ),
+			'show_in_rest'  => true,
 		)
 	);
 }
