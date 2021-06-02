@@ -14,43 +14,46 @@
  *  アクセスが無ければ実行されない
  */
 function vk_trial_auto_function() {
+	$result = array();
 	/**
 	 * テーマをアップデートする
 	 * https://developer.wordpress.org/cli/commands/theme/update/
 	 */
 	exec( 'wp theme update --all', $output, $return_var );
-	if ( $return_var !== 0 ){
-		$result = 'false';
-	} else {
-		$result = 'true';
-	}
 
 	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
-	if ( ! get_option( 'vk_theme_update' ) ) {
-		add_option( 'vk_theme_update', $result );
+	if ( $return_var !== 0 ){
+		$theme_update = array(
+			'theme_update' => 'false'
+		);
+	} else {
+		$theme_update =array(
+			'theme_update' => 'true'
+		);
 	}
-	update_option( 'vk_theme_update', $result );
+	$result = array_merge( $result, $theme_update );
 
 	/**
 	 * プラグインをアップデートする
 	 * https://developer.wordpress.org/cli/commands/plugin/update/
 	 */
 	exec( 'wp plugin update --all', $output, $return_var );
-	if ( $return_var !== 0 ){
-		$result = 'false';
-	} else {
-		$result = 'true';
-	}
 
 	/**
 	 * テーマアップデートが正常に終わったかどうか
 	 */
-	if ( ! get_option( 'vk_plugin_update' ) ) {
-		add_option( 'vk_plugin_update', $result );
+	if ( $return_var !== 0 ){
+		$plugin_update =array(
+			'plugin_update' => 'false'
+		);
+	} else {
+		$plugin_update =array(
+			'plugin_update' => 'true'
+		);
 	}
-	update_option( 'vk_plugin_update', $result );
+	$result = array_merge( $result, $plugin_update );
 
 	/**
 	 * 復元するコマンド
@@ -59,20 +62,21 @@ function vk_trial_auto_function() {
 	 * 4b574fbf3303はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 	 * データベースのみ復元する
 	 */
-	// exec('wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var);
-	if ( $return_var !== 0 ){
-		$result = 'false';
-	} else {
-		$result = 'true';
-	}
+	//exec( 'wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var );
 
 	/**
 	 * 復元が正常に終わったかどうか
 	 */
-	if ( ! get_option( 'vk_updraftplus_restore' ) ) {
-		add_option( 'vk_updraftplus_restore', $result );
+	if ( $return_var !== 0 ){
+		$updraftplus = array(
+			'updraftplus' => 'false'
+		);
+	} else {
+		$updraftplus = array(
+			'updraftplus' => 'true'
+		);
 	}
-	update_option( 'vk_updraftplus_restore', $result );
+	$result = array_merge( $result, $updraftplus );
 
 	/**
 	 * 試用版ユーザーのパスワードを変更する 
@@ -81,22 +85,31 @@ function vk_trial_auto_function() {
 	$password = wp_generate_password( 12, true );
 	wp_set_password( $password, 2 );
 
+	$result_password = array (
+		'password' => $password
+	);
+	$result = array_merge( $result, $result_password );
+
 	/**
 	 * 自動返信メールで試用ユーザーにパスワードを送るためにDBに保存
 	 */
-	if ( ! get_option( 'vektor_guest_password' ) ) {
-		add_option( 'vektor_guest_password', $password );
+	if ( ! get_option( 'vktas_options' ) ) {
+		add_option( 'vktas_options', $result );
 	}
-	update_option( 'vektor_guest_password', $password );
+	update_option( 'vktas_options', $result );
 
 	/**
 	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
 	 */
-	$vk_theme_update        = get_option( 'vk_theme_update' );
-	$vk_plugin_update       = get_option( 'vk_plugin_update' );
-	$vk_updraftplus_restore = get_option( 'vk_updraftplus_restore' );
-	if ( $vk_theme_update == 'false' or $vk_plugin_update == 'false' or $vk_updraftplus_restore == 'false' ) {
-
+	$options                = vktas_default_options();
+	$vk_theme_update        = $options[ 'theme_update' ];
+	$vk_plugin_update       = $options[ 'plugin_update' ];
+	$vk_updraftplus_restore = $options[ 'updraftplus' ];
+	if ( 
+		$vk_theme_update        == 'false' ||
+		$vk_plugin_update       == 'false' ||
+		$vk_updraftplus_restore == 'false'
+	) {
 		$to = get_option('admin_email');
 		$subject = 'お試し申請サイト復元エラー';
 		$message = <<<EOT
@@ -142,7 +155,8 @@ function wpcf7_post_password ( $contact_form ) {
 	/**
 	 * wp-cronで生成されたパスワード
 	 */
-	$password = get_option( 'vektor_guest_password' );
+	$options  = vktas_default_options();
+	$password = $options[ 'password' ];
 
 	/**
 	 * mailは管理者宛のメール
@@ -212,3 +226,28 @@ function add_admin_only_post_type_manage() {
 	);
 }
 add_action( 'init', 'add_admin_only_post_type_manage' );
+
+/**
+ * vktas_optionsを変換
+ */
+function vktas_default_options() {
+	$default = array(
+		'theme_update'  => '',
+		'plugin_update' => '',
+		'updraftplus'   => '',
+		'password'      => '',
+	);
+	$options = get_option( 'vktas_options' );
+	$options = wp_parse_args( $options, $default );
+	return $options;
+}
+
+/**
+ * プラグイン停止時このプラグインで作ったoptionsの値を消す
+ */
+if ( function_exists( 'register_deactivation_hook' ) ) {
+	register_deactivation_hook( __FILE__, 'vktas_uninstall_function' );
+}
+function vktas_uninstall_function() {
+	delete_option( 'vktas_options' );
+}
