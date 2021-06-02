@@ -13,7 +13,7 @@
  *  深夜２時以降にユーザーからアクセスがあった時に１日１回実行する関数
  *  アクセスが無ければ実行されない
  */
-function vk_trial_auto_function() {
+function vktas_daily_job() {
 	$result = array();
 	/**
 	 * テーマをアップデートする
@@ -120,7 +120,7 @@ EOT;
 	}
 
 }
-add_action( 'vk_trial_form_auto_cron', 'vk_trial_auto_function' );
+add_action( 'vk_trial_form_auto_cron', 'vktas_daily_job' );
 
 /**
  *  検証用インターバル設定関数
