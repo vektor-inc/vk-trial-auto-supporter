@@ -59,10 +59,10 @@ function vktas_auto_job() {
 	 * 復元するコマンド
 	 * https://updraftplus.com/wp-cli-updraftplus-documentation/
 	 *
-	 * 4b574fbf3303はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
+	 * ced9b28b6664 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 	 * データベースのみ復元する
 	 */
-	// exec( 'wp updraftplus restore 4b574fbf3303 --components="db"' , $output, $return_var );
+	exec( 'wp updraftplus restore ced9b28b6664  --components="db"' , $output, $return_var );
 
 	/**
 	 * 復元が正常に終わったかどうか
@@ -99,7 +99,7 @@ function vktas_auto_job() {
 	update_option( 'vktas_options', $options );
 
 	/**
-	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
+	 * コマンド実行時に管理者宛にメールを送る
 	 */
 	$options                = vktas_get_options();
 	$vk_theme_update        = $options['theme_update'];
@@ -109,15 +109,18 @@ function vktas_auto_job() {
 		$vk_plugin_update == 'false' ||
 		$vk_updraftplus_restore == 'false'
 	) {
-		$to      = get_option( 'admin_email' );
-		$subject = 'お試し申請サイト復元エラー';
-		$message = <<<EOT
-		テーマアップデート：$vk_theme_update
-		プラグインアップデート：$vk_plugin_update
-		復元：$vk_updraftplus_restore
-EOT;
-		wp_mail( $to, $subject, $message );
+		$subject = 'Katawaraお試しサイト復元エラー';
+	} else {
+		$subject = 'Katawaraお試しサイト復元完了';
 	}
+
+	$to      = get_option( 'admin_email' );
+	$message = <<<EOT
+	テーマアップデート：$vk_theme_update
+	プラグインアップデート：$vk_plugin_update
+	復元：$vk_updraftplus_restore
+EOT;
+	wp_mail( $to, $subject, $message );
 
 }
 add_action( 'vktas_auto_cron', 'vktas_auto_job' );
@@ -143,9 +146,9 @@ add_filter( 'cron_schedules', 'vktas_test_interval' );
  */
 if ( ! wp_next_scheduled( 'vktas_auto_cron' ) ) {
 	date_default_timezone_set( 'Asia/Tokyo' );
-	$timestamp  = '2021-05-27 11:40:00';
+	$timestamp  = '2021-06-03 02:00:00';
 	// 標準は hourly, twicedaily, daily だが検証用に独自に '300sec' が追加してある
-	$recurrence = '300sec';
+	$recurrence = 'daily';
 	$hook       = 'vktas_auto_cron';
 	wp_schedule_event( strtotime( $timestamp ), $recurrence, $hook );
 }
