@@ -10,6 +10,32 @@
  */
 
 /**
+ * プラグイン有効化時
+ * 
+ * 以前作ったイベントvk_trial_form_auto_cronを削除する
+ */
+if ( function_exists( 'register_activation_hook' ) ) {
+	register_activation_hook( __FILE__, 'vktas_install_function' );
+}
+function vktas_install_function() {
+	wp_clear_scheduled_hook( 'vk_trial_form_auto_cron' );
+}
+
+/**
+ * プラグイン停止時
+ * 
+ * プラグインで作ったoptionsの値を消す
+ * vktas_auto_cronイベントを削除する
+ */
+if ( function_exists( 'register_deactivation_hook' ) ) {
+	register_deactivation_hook( __FILE__, 'vktas_uninstall_function' );
+}
+function vktas_uninstall_function() {
+	delete_option( 'vktas_options' );
+	wp_clear_scheduled_hook( 'vktas_auto_cron' );
+}
+
+/**
  *  深夜２時以降にユーザーからアクセスがあった時に１日１回実行する関数
  *  アクセスが無ければ実行されない
  */
@@ -59,10 +85,10 @@ function vktas_auto_job() {
 	 * 復元するコマンド
 	 * https://updraftplus.com/wp-cli-updraftplus-documentation/
 	 *
-	 * ced9b28b6664 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
+	 * e9c9cf068ea5 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 	 * データベースのみ復元する
 	 */
-	exec( 'wp updraftplus restore ced9b28b6664  --components="db"' , $output, $return_var );
+	exec( 'wp updraftplus restore e9c9cf068ea5  --components="db"' , $output, $return_var );
 
 	/**
 	 * 復元が正常に終わったかどうか
@@ -247,22 +273,3 @@ function vktas_get_options() {
 	$options = wp_parse_args( $options, $default );
 	return $options;
 }
-
-/**
- * プラグイン停止時
- * 
- * プラグインで作ったoptionsの値を消す
- * vktas_auto_cronイベントを削除する
- */
-if ( function_exists( 'register_deactivation_hook' ) ) {
-	register_deactivation_hook( __FILE__, 'vktas_uninstall_function' );
-}
-function vktas_uninstall_function() {
-	delete_option( 'vktas_options' );
-	wp_clear_scheduled_hook( 'vktas_auto_cron' );
-}
-
-/**
- * 以前作ったイベントvk_trial_form_auto_cronを削除する
- */
-wp_clear_scheduled_hook( 'vk_trial_form_auto_cron' );
