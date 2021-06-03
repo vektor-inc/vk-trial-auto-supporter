@@ -99,7 +99,7 @@ function vktas_auto_job() {
 	update_option( 'vktas_options', $options );
 
 	/**
-	 * コマンドが実行されていなかった場合、管理者宛にメールを送る
+	 * コマンド実行時に管理者宛にメールを送る
 	 */
 	$options                = vktas_get_options();
 	$vk_theme_update        = $options['theme_update'];
@@ -109,15 +109,18 @@ function vktas_auto_job() {
 		$vk_plugin_update == 'false' ||
 		$vk_updraftplus_restore == 'false'
 	) {
-		$to      = get_option( 'admin_email' );
-		$subject = 'お試し申請サイト復元エラー';
-		$message = <<<EOT
-		テーマアップデート：$vk_theme_update
-		プラグインアップデート：$vk_plugin_update
-		復元：$vk_updraftplus_restore
-EOT;
-		wp_mail( $to, $subject, $message );
+		$subject = 'Katawaraお試しサイト復元エラー';
+	} else {
+		$subject = 'Katawaraお試しサイト復元完了';
 	}
+
+	$to      = get_option( 'admin_email' );
+	$message = <<<EOT
+	テーマアップデート：$vk_theme_update
+	プラグインアップデート：$vk_plugin_update
+	復元：$vk_updraftplus_restore
+EOT;
+	wp_mail( $to, $subject, $message );
 
 }
 add_action( 'vktas_auto_cron', 'vktas_auto_job' );
