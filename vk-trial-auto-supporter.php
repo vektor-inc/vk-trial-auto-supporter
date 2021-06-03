@@ -249,11 +249,20 @@ function vktas_get_options() {
 }
 
 /**
- * プラグイン停止時このプラグインで作ったoptionsの値を消す
+ * プラグイン停止時
+ * 
+ * プラグインで作ったoptionsの値を消す
+ * vktas_auto_cronイベントを削除する
  */
 if ( function_exists( 'register_deactivation_hook' ) ) {
 	register_deactivation_hook( __FILE__, 'vktas_uninstall_function' );
 }
 function vktas_uninstall_function() {
 	delete_option( 'vktas_options' );
+	wp_clear_scheduled_hook( 'vktas_auto_cron' );
 }
+
+/**
+ * 以前作ったイベントvk_trial_form_auto_cronを削除する
+ */
+wp_clear_scheduled_hook( 'vk_trial_form_auto_cron' );
