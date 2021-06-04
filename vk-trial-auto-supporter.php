@@ -40,114 +40,134 @@ function vktas_uninstall_function() {
  *  アクセスが無ければ実行されない
  */
 function vktas_auto_job() {
-	$options = array();
+	
 	/**
-	 * テーマをアップデートする
-	 * https://developer.wordpress.org/cli/commands/theme/update/
+	 * イベント時間が保存されていない または
+	 * 保存した時間との差が3600秒(1日)より間隔が空いていたら実行
 	 */
-	exec( 'wp theme update --all', $output, $return_var );
-
-	/**
-	 * テーマアップデートが正常に終わったかどうか
-	 */
-	if ( $return_var !== 0 ) {
-		$theme_update = array(
-			'theme_update' => 'false',
+	$options    = vktas_get_options();
+	$event_date = $options['event_date'];
+	$now_date   = date("Y/m/d H:i:s");
+	$diff       = strtotime($now_date) - strtotime($event_date);
+	if ( empty( $event_date ) || $diff > 3600 ) {
+		
+		$options = array();
+		/**
+		 * テーマをアップデートする
+		 * https://developer.wordpress.org/cli/commands/theme/update/
+		 */
+		exec( 'wp theme update --all', $output, $return_var );
+	
+		/**
+		 * テーマアップデートが正常に終わったかどうか
+		 */
+		if ( $return_var !== 0 ) {
+			$theme_update = array(
+				'theme_update' => 'false',
+			);
+		} else {
+			$theme_update = array(
+				'theme_update' => 'true',
+			);
+		}
+		$options = array_merge( $options, $theme_update );
+	
+		/**
+		 * プラグインをアップデートする
+		 * https://developer.wordpress.org/cli/commands/plugin/update/
+		 */
+		exec( 'wp plugin update --all', $output, $return_var );
+	
+		/**
+		 * プラグインアップデートが正常に終わったかどうか
+		 */
+		if ( $return_var !== 0 ) {
+			$plugin_update = array(
+				'plugin_update' => 'false',
+			);
+		} else {
+			$plugin_update = array(
+				'plugin_update' => 'true',
+			);
+		}
+		$options = array_merge( $options, $plugin_update );
+	
+		/**
+		 * 復元するコマンド
+		 * https://updraftplus.com/wp-cli-updraftplus-documentation/
+		 *
+		 * e9c9cf068ea5 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
+		 * データベースのみ復元する
+		 */
+		//exec( 'wp updraftplus restore e9c9cf068ea5  --components="db"' , $output, $return_var );
+	
+		/**
+		 * 復元が正常に終わったかどうか
+		 */
+		if ( $return_var !== 0 ) {
+			$updraftplus = array(
+				'updraftplus' => 'false',
+			);
+		} else {
+			$updraftplus = array(
+				'updraftplus' => 'true',
+			);
+		}
+		$options = array_merge( $options, $updraftplus );
+	
+		/**
+		 * 試用版ユーザーのパスワードを変更する
+		 * 試用版ユーザーID '2'を設定
+		 */
+		$password = wp_generate_password( 12, true );
+		wp_set_password( $password, 2 );
+	
+		$options_password = array(
+			'password' => $password,
 		);
-	} else {
-		$theme_update = array(
-			'theme_update' => 'true',
+		$options          = array_merge( $options, $options_password );
+	
+		/**
+		 * 重複実行を避けるため実行された時間を保存する
+		 */
+		$options_time = array(
+			'event_date' => date("Y/m/d H:i:s"),
 		);
-	}
-	$options = array_merge( $options, $theme_update );
-
-	/**
-	 * プラグインをアップデートする
-	 * https://developer.wordpress.org/cli/commands/plugin/update/
-	 */
-	exec( 'wp plugin update --all', $output, $return_var );
-
-	/**
-	 * プラグインアップデートが正常に終わったかどうか
-	 */
-	if ( $return_var !== 0 ) {
-		$plugin_update = array(
-			'plugin_update' => 'false',
-		);
-	} else {
-		$plugin_update = array(
-			'plugin_update' => 'true',
-		);
-	}
-	$options = array_merge( $options, $plugin_update );
-
-	/**
-	 * 復元するコマンド
-	 * https://updraftplus.com/wp-cli-updraftplus-documentation/
-	 *
-	 * e9c9cf068ea5 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
-	 * データベースのみ復元する
-	 */
-	exec( 'wp updraftplus restore e9c9cf068ea5  --components="db"' , $output, $return_var );
-
-	/**
-	 * 復元が正常に終わったかどうか
-	 */
-	if ( $return_var !== 0 ) {
-		$updraftplus = array(
-			'updraftplus' => 'false',
-		);
-	} else {
-		$updraftplus = array(
-			'updraftplus' => 'true',
-		);
-	}
-	$options = array_merge( $options, $updraftplus );
-
-	/**
-	 * 試用版ユーザーのパスワードを変更する
-	 * 試用版ユーザーID '2'を設定
-	 */
-	$password = wp_generate_password( 12, true );
-	wp_set_password( $password, 2 );
-
-	$options_password = array(
-		'password' => $password,
-	);
-	$options          = array_merge( $options, $options_password );
-
-	/**
-	 * 自動返信メールで試用ユーザーにパスワードを送るためにDBに保存
-	 */
-	if ( ! get_option( 'vktas_options' ) ) {
-		add_option( 'vktas_options', $options );
-	}
-	update_option( 'vktas_options', $options );
-
-	/**
-	 * コマンド実行時に管理者宛にメールを送る
-	 */
-	$options                = vktas_get_options();
-	$vk_theme_update        = $options['theme_update'];
-	$vk_plugin_update       = $options['plugin_update'];
-	$vk_updraftplus_restore = $options['updraftplus'];
-	if ( $vk_theme_update == 'false' ||
-		$vk_plugin_update == 'false' ||
-		$vk_updraftplus_restore == 'false'
-	) {
-		$subject = 'Katawaraお試しサイト復元エラー';
-	} else {
-		$subject = 'Katawaraお試しサイト復元完了';
-	}
-
-	$to      = get_option( 'admin_email' );
-	$message = <<<EOT
-	テーマアップデート：$vk_theme_update
-	プラグインアップデート：$vk_plugin_update
-	復元：$vk_updraftplus_restore
+		$options = array_merge( $options, $options_time );
+	
+		/**
+		 * 自動返信メールで試用ユーザーにパスワードを送るためにDBに保存
+		 */
+		if ( ! get_option( 'vktas_options' ) ) {
+			add_option( 'vktas_options', $options );
+		}
+		update_option( 'vktas_options', $options );
+	
+		/**
+		 * コマンド実行時に管理者宛にメールを送る
+		 */
+		$options                = vktas_get_options();
+		$vk_theme_update        = $options['theme_update'];
+		$vk_plugin_update       = $options['plugin_update'];
+		$vk_updraftplus_restore = $options['updraftplus'];
+		if ( $vk_theme_update == 'false' ||
+			$vk_plugin_update == 'false' ||
+			$vk_updraftplus_restore == 'false'
+		) {
+			$subject = 'Katawaraお試しサイト復元エラー';
+		} else {
+			$subject = 'Katawaraお試しサイト復元完了';
+		}
+	
+		$to      = get_option( 'admin_email' );
+		$message = <<<EOT
+		テーマアップデート：$vk_theme_update
+		プラグインアップデート：$vk_plugin_update
+		復元：$vk_updraftplus_restore
 EOT;
-	wp_mail( $to, $subject, $message );
+		wp_mail( $to, $subject, $message );
 
+	}
 }
 add_action( 'vktas_auto_cron', 'vktas_auto_job' );
 
@@ -268,6 +288,7 @@ function vktas_get_options() {
 		'plugin_update' => '',
 		'updraftplus'   => '',
 		'password'      => '',
+		'event_date'    => '',
 	);
 	$options = get_option( 'vktas_options' );
 	$options = wp_parse_args( $options, $default );
