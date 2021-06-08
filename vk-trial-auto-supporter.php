@@ -43,13 +43,13 @@ function vktas_auto_job() {
 	
 	/**
 	 * イベント時間が保存されていない または
-	 * 保存した時間との差が3600秒(1日)より間隔が空いていたら実行
+	 * 保存した時間との差が86400秒(1日)より間隔が空いていたら実行
 	 */
 	$options    = vktas_get_options();
 	$event_date = $options['event_date'];
 	$now_date   = date("Y/m/d H:i:s");
 	$diff       = strtotime($now_date) - strtotime($event_date);
-	if ( empty( $event_date ) || $diff > 3600 ) {
+	if ( empty( $event_date ) || $diff > 86400 ) {
 		
 		$options = array();
 		/**
@@ -93,13 +93,13 @@ function vktas_auto_job() {
 		$options = array_merge( $options, $plugin_update );
 	
 		/**
-		 * 復元するコマンド
+		 * 復元するコマンド 本番環境でnonceを設定する
 		 * https://updraftplus.com/wp-cli-updraftplus-documentation/
 		 *
-		 * e9c9cf068ea5 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
+		 * 9a99c308ce30 はnonceでバックアップを作ると自動で作られる識別子 管理画面から確認する
 		 * データベースのみ復元する
 		 */
-		//exec( 'wp updraftplus restore e9c9cf068ea5  --components="db"' , $output, $return_var );
+		//exec( 'wp updraftplus restore 9a99c308ce30  --components="db"' , $output, $return_var );
 	
 		/**
 		 * 復元が正常に終わったかどうか
@@ -150,6 +150,7 @@ function vktas_auto_job() {
 		$vk_theme_update        = $options['theme_update'];
 		$vk_plugin_update       = $options['plugin_update'];
 		$vk_updraftplus_restore = $options['updraftplus'];
+		$password               = $options['password'];
 		if ( $vk_theme_update == 'false' ||
 			$vk_plugin_update == 'false' ||
 			$vk_updraftplus_restore == 'false'
@@ -164,6 +165,7 @@ function vktas_auto_job() {
 		テーマアップデート：$vk_theme_update
 		プラグインアップデート：$vk_plugin_update
 		復元：$vk_updraftplus_restore
+		お試しユーザーパスワード：$password
 EOT;
 		wp_mail( $to, $subject, $message );
 
